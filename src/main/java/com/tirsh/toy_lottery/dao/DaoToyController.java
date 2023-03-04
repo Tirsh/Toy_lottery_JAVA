@@ -12,7 +12,7 @@ import java.util.List;
 public class DaoToyController {
     DBConnection dbConnection = new DBConnection();
 
-    private ResultSet dbOperate(String query) {
+    private ResultSet dbGetOperate(String query) {
         try {
             Statement statement = dbConnection.getConnection().createStatement();
             return statement.executeQuery(query);
@@ -21,10 +21,19 @@ public class DaoToyController {
             return null;
         }
     }
+    private boolean dbOperate(String query) {
+        try {
+            Statement statement = dbConnection.getConnection().createStatement();
+            return statement.execute(query);
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
 
 
     public List<Toy> getAll() throws SQLException {
-        var result = dbOperate("SELECT * FROM toys");
+        var result = dbGetOperate("SELECT * FROM toys");
         if (result != null) {
             return getDataFromResultSet(result);
         }
@@ -32,7 +41,7 @@ public class DaoToyController {
     }
 
     public Toy getById(int id) throws SQLException {
-        var result = dbOperate("SELECT * FROM toys WHERE id = %d".formatted(id));
+        var result = dbGetOperate("SELECT * FROM toys WHERE id = %d".formatted(id));
         if (result != null) {
             return getDataFromResultSet(result).get(0);
         }
@@ -41,18 +50,16 @@ public class DaoToyController {
 
     public Toy save(Toy toy){
         if (toy.isNew()) {
-            var result = dbOperate("INSERT INTO toys (title, quantity, drop_frequency) VALUES (%s, %d, %d);".formatted(toy.getTitle(), toy.getQuantity(), toy.getDropFrequency()));
-            return result == null ? null : toy;
+            var result = dbOperate("INSERT INTO toys (title, quantity, drop_frequency) VALUES ('%s', %d, %d);".formatted(toy.getTitle(), toy.getQuantity(), toy.getDropFrequency()));
+            return result ? toy : null;
         } else {
-            var result = dbOperate("UPDATE toys SET title = %s, quantity = %d, drop_frequency = %d WHERE id = %d;".formatted(toy.getTitle(), toy.getQuantity(), toy.getDropFrequency(), toy.getId()));
-            return result == null ? null : toy;
+            var result = dbOperate("UPDATE toys SET title = '%s', quantity = %d, drop_frequency = %d WHERE id = %d;".formatted(toy.getTitle(), toy.getQuantity(), toy.getDropFrequency(), toy.getId()));
+            return result ? toy : null;
         }
     }
 
     public boolean delete(int id){
-        var result = dbOperate("DELETE FROM toys WHERE id = %d;".formatted(id));
-
-        return result != null;
+        return dbOperate("DELETE FROM toys WHERE id = %d;".formatted(id));
     }
 
     private List<Toy> getDataFromResultSet(ResultSet resultSet) throws SQLException {

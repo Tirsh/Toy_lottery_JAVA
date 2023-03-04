@@ -56,4 +56,14 @@ public class Toy {
     public void setDropFrequency(int dropFrequency) {
         this.dropFrequency = dropFrequency;
     }
+
+    @Override
+    public String toString() {
+        return "Toy{" +
+                "id=" + id +
+                ", title='" + title + '\'' +
+                ", quantity=" + quantity +
+                ", dropFrequency=" + dropFrequency +
+                '}';
+    }
 }

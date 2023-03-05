@@ -28,10 +28,9 @@ public class Ui {
 
     public Ui(DataController dataController) {
         this.dataController = dataController;
-        initFrame();
     }
 
-    private void initFrame() {
+    public void initUI() {
         toyLotteryFrame = new JFrame("Toys lottery");
 
         newLotteryButton = new JButton("Новая Лотерея");

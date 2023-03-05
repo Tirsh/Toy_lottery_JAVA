@@ -22,7 +22,7 @@ public class DataController {
         }
     }
 
-    public Toy add(Toy toy) {
+    public Toy save(Toy toy) {
         return daoToyController.save(toy);
     }
 
@@ -36,6 +36,16 @@ public class DataController {
         } catch (SQLException e) {
             e.printStackTrace();
             return null;
+        }
+    }
+
+    public void decreaseQuantity(Toy toy){
+        if (toy.getQuantity() > 1) {
+            toy.setQuantity(toy.getQuantity() - 1);
+            save(toy);
+        }
+        else {
+            delete(toy.getId());
         }
     }
 }

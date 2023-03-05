@@ -2,18 +2,29 @@ package com.tirsh.toy_lottery.ui;
 
 import com.tirsh.toy_lottery.model.Toy;
 import com.tirsh.toy_lottery.service.DataController;
+import com.tirsh.toy_lottery.service.Logger;
+import com.tirsh.toy_lottery.service.LotteryGame;
 
 import javax.swing.*;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.ArrayList;
+import java.util.List;
+
+import static java.awt.Component.LEFT_ALIGNMENT;
 
 public class Ui {
-    DataController dataController;
-    JFrame toyLotteryFrame;
-    DefaultListModel<Toy> currentList, lotteryList;
-    JButton newLotteryButton, startLotteryButton, addButton, removeButton;
-    JList jList, jListSelected;
-    JLabel toys_Label, selectedToysLabel;
+    private DataController dataController;
+    private LotteryGame lotteryGame;
+    private Logger logger;
+    private JFrame toyLotteryFrame;
+    private DefaultListModel<Toy> currentList, lotteryList;
+    private JButton newLotteryButton, startLotteryButton, addButton, removeButton;
+    private JList jList, jListSelected;
+    private JLabel toys_Label, selectedToysLabel;
+    private JDialog jDialog;
+    Container contentpane;
 
     public Ui(DataController dataController) {
         this.dataController = dataController;
@@ -43,17 +54,17 @@ public class Ui {
         currentList = new DefaultListModel<>();
         lotteryList = new DefaultListModel<>();
         currentList.addAll(dataController.getAllToys());
-//        currentList.addAll(dataController.getAllToys().stream().map(item -> item.getTitle()).toList());
-        jList = new JList(currentList); //data has type Object[]
+
+        jList = new JList(currentList);
         jListSelected = new JList<>(lotteryList);
 
-        jList.setSelectionMode(ListSelectionModel.SINGLE_INTERVAL_SELECTION);
-        jList.setLayoutOrientation(JList.HORIZONTAL_WRAP);
+        jList.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
+        jList.setLayoutOrientation(JList.VERTICAL_WRAP);
         jList.setVisibleRowCount(-1);
         jList.setBounds(20, 50, 105, 150);
-        //        JScrollPane listScroller = new JScrollPane(jList);
-        //        listScroller.setPreferredSize(new Dimension(150, 80));
 
+        jListSelected.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
+        jListSelected.setLayoutOrientation(JList.VERTICAL_WRAP);
         jListSelected.setVisibleRowCount(-1);
         jListSelected.setBounds(180, 50, 105, 150);
 
@@ -86,20 +97,57 @@ public class Ui {
     private void addToy() {
         var toys = jList.getSelectedValuesList();
         lotteryList.addAll(toys);
-        int[] toysIndexes = jList.getSelectedIndices();
-
-        for (int item : toysIndexes) {
-            currentList.remove(item);
+        for (Object toy : toys) {
+            currentList.removeElement(toy);
         }
         jList.revalidate();
         jListSelected.revalidate();
-
-
     }
 
-
     private void removeToy() {
+        var toys = jListSelected.getSelectedValuesList();
+        currentList.addAll(toys);
+        for (Object toy : toys) {
+            lotteryList.removeElement(toy);
+        }
+        jList.revalidate();
+        jListSelected.revalidate();
+    }
 
+    private void startLottery(){
+        var toys = jListSelected.getModel();
+        List<Toy> toysList= new ArrayList<>();
+        for (int i = 0; i < toys.getSize(); i++){
+            toysList.add(((Toy)toys.getElementAt(i)));
+        }
+        lotteryGame = new LotteryGame(toysList);
+        Toy chosenToy = lotteryGame.priceDrawing();
+        dataController.decreaseQuantity(chosenToy);
+        logger = new Logger(chosenToy);
+        logger.writeDataToCSV();
+        currentList.removeAllElements();
+        lotteryList.removeAllElements();
+        currentList.addAll(dataController.getAllToys());
+        jList.revalidate();
+        jListSelected.revalidate();
+        createDialog(chosenToy.getTitle());
+    }
+    private void createDialog(String toy){
+        jDialog = new JDialog(toyLotteryFrame, "Розыгрыш состоялся", true);
+        jDialog.setLayout( new FlowLayout() );
+        JButton b = new JButton ("OK");
+        b.addActionListener ( new ActionListener()
+        {
+            public void actionPerformed( ActionEvent e )
+            {
+                jDialog.setVisible(false);
+            }
+        });
+        jDialog.add( new JLabel ("Выпала игрушка: %s.".formatted(toy)));
+        jDialog.add( new JLabel ("Информация о розыгрыше сохранена в draws.csv"));
+        jDialog.add(b);
+        jDialog.setSize(320,120);
+        jDialog.setVisible(true);
     }
 
     private class ButtonClickListener implements ActionListener {
@@ -121,10 +169,9 @@ public class Ui {
                     break;
                 }
                 case "startLottery": {
+                    startLottery();
                     break;
                 }
-
-
             }
         }
     }

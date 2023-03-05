@@ -11,7 +11,7 @@ public class DataController {
 
     public DataController() {
         daoToyController = new DaoToyController();
-  }
+    }
 
     public List<Toy> getAllToys() {
         try {
@@ -26,11 +26,11 @@ public class DataController {
         return daoToyController.save(toy);
     }
 
-    public boolean delete(int id){
+    public boolean delete(int id) {
         return daoToyController.delete(id);
     }
 
-    public Toy getToy(int id){
+    public Toy getToy(int id) {
         try {
             return daoToyController.getById(id);
         } catch (SQLException e) {
@@ -39,12 +39,11 @@ public class DataController {
         }
     }
 
-    public void decreaseQuantity(Toy toy){
+    public void decreaseQuantity(Toy toy) {
         if (toy.getQuantity() > 1) {
             toy.setQuantity(toy.getQuantity() - 1);
             save(toy);
-        }
-        else {
+        } else {
             delete(toy.getId());
         }
     }

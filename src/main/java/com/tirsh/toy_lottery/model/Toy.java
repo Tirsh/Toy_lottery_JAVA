@@ -17,11 +17,7 @@ public class Toy {
         this(null, title, quantity, dropFrequency);
     }
 
-    public Toy(Toy toy) {
-        this(toy.getId(), toy.getTitle(), toy.getQuantity(), toy.getDropFrequency());
-    }
-
-    public boolean isNew(){
+    public boolean isNew() {
         return this.id == null;
     }
 
@@ -59,11 +55,6 @@ public class Toy {
 
     @Override
     public String toString() {
-        return "Toy{" +
-                "id=" + id +
-                ", title='" + title + '\'' +
-                ", quantity=" + quantity +
-                ", dropFrequency=" + dropFrequency +
-                '}';
+        return title;
     }
 }
